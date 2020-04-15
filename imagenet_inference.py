@@ -6,6 +6,10 @@ from matplotlib.pyplot import imread
 from caffe_classes import class_names
 from alexnet import AlexNet
 
+if tf.__version__ > '2.0':
+    print("Installed Tensorflow is not 1.x,it is %s" % tf.__version__)
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior() 
 
 # placeholders
 x = tf.placeholder(tf.float32, (None, 227, 227, 3))

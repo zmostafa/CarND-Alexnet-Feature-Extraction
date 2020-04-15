@@ -10,6 +10,11 @@ from scipy.misc import imread
 from caffe_classes import class_names
 from alexnet import AlexNet
 
+if tf.__version__ > '2.0':
+    print("Installed Tensorflow is not 1.x,it is %s" % tf.__version__)
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior() 
+
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 # TODO: Resize the images so they can be fed into AlexNet.
 # HINT: Use `tf.image.resize_images` to resize the images
