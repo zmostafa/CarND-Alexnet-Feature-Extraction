@@ -1,4 +1,5 @@
 import pickle
+# !pip install tensorflow-gpu==2.1  # added for running in colab
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -9,6 +10,20 @@ if tf.__version__ > '2.0':
     print("Installed Tensorflow is not 1.x,it is %s" % tf.__version__)
     import tensorflow.compat.v1 as tf
     tf.disable_v2_behavior()
+
+gpu_devices = tf.config.list_physical_devices('GPU')
+print("Numer of GPUs: ", len(gpu_devices))
+print("GPU Info. ", gpu_devices)
+cpu_devices = tf.config.list_physical_devices('CPU')
+print("Numer of CPUs: ", len(cpu_devices))
+print("CPU Info. ", cpu_devices)
+visible_devices = tf.config.get_visible_devices()
+print("Visible Devices: ", visible_devices)
+
+if len(gpu_devices) != 0:
+  device_name = str(gpu_devices[0].name)
+else:
+  device_name = cpu_devices[0].name
 
 # TODO: Load traffic signs data.
 with open('train.p', mode='rb') as f:
@@ -45,6 +60,7 @@ rate = 0.001
 EPOCHS = 50
 BATCH_SIZE = 128
 
+# with tf.device('/gpu:0'):  # for enhacing the trining time
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)
 loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = rate)
@@ -65,12 +81,11 @@ def evaluate(X_data, y_data):
         total_accuracy += (accuracy * len(batch_x))
     return total_accuracy / num_examples
 # TODO: Train and evaluate the feature extraction model.
-with tf.Session() as sess:
+with tf.Session(config=tf.ConfigProto(allow_soft_placement=True,log_device_placement=True)) as sess:
     sess.run(tf.global_variables_initializer())
     num_examples = len(X_train)
     
-    print("Training on %d samples..."  %num_examples)
-    print()
+    print("Training on %d samples...\n" %num_examples)
     for i in range(EPOCHS):
         X_train, y_train = shuffle(X_train, y_train)
         for offset in range(0, num_examples, BATCH_SIZE):
@@ -85,4 +100,4 @@ with tf.Session() as sess:
         print()
         
     saver.save(sess, './trafficSigns-Classifier')
-    print("Model saved")
+    print("\nModel saved")
