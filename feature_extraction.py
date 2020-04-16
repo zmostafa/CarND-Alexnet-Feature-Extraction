@@ -2,9 +2,14 @@ import time
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-from scipy.misc import imread
+import imageio
 from alexnet import AlexNet
 
+if tf.__version__ > '2.0':
+    print("Installed Tensorflow is not 1.x,it is %s" % tf.__version__)
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior() 
+    
 sign_names = pd.read_csv('signnames.csv')
 nb_classes = 43
 
@@ -19,17 +24,17 @@ fc7 = AlexNet(resized, feature_extract=True)
 # HINT: Look at the final layer definition in alexnet.py to get an idea of what this
 # should look like.
 shape = (fc7.get_shape().as_list()[-1], nb_classes)  # use this shape for the weight matrix
-probs = ...
+probs = tf.nn.softmax(tf.matmul(fc7,tf.Variable(tf.truncated_normal(shape,stddev=1e-2))) + tf.Variable(tf.zeros(nb_classes)))
 
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 
 # Read Images
-im1 = imread("construction.jpg").astype(np.float32)
+im1 = imageio.imread("construction.jpg").astype(np.float32)
 im1 = im1 - np.mean(im1)
 
-im2 = imread("stop.jpg").astype(np.float32)
+im2 = imageio.imread("stop.jpg").astype(np.float32)
 im2 = im2 - np.mean(im2)
 
 # Run Inference
